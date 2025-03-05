@@ -1,45 +1,27 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals  # Python 2: Unicode by default
-from flask import Flask, render_template, request, send_file
+from flask import Flask, request, render_template, send_from_directory
 import os
-import yt_dlp as youtube_dl  # Use yt-dlp instead of youtube-dl
 
 app = Flask(__name__)
+UPLOAD_FOLDER = "uploads"
 
-# Temporary folder for storing downloads
-download_path = os.path.join(os.getcwd(), "downloads")
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-# Fix for Python 2.7 (No exist_ok=True support)
-if not os.path.exists(download_path):
-    os.makedirs(download_path)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 @app.route("/", methods=["GET", "POST"])
-def index():
+def upload_file():
     if request.method == "POST":
-        video_url = request.form.get("video_url")
-        if video_url:
-            try:
-                # Configure yt-dlp options (use cookies if needed)
-                ydl_opts = {
-                    'outtmpl': os.path.join(download_path, '%(title)s.%(ext)s'),
-                    'cookiefile': 'cookies.txt',  # Add this if video requires login
-                }
-
-                # Download video
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                    info_dict = ydl.extract_info(video_url, download=True)
-                    video_filename = ydl.prepare_filename(info_dict).decode("utf-8")  # Fix Unicode issues
-
-                return render_template("index.html", message="Download Ready!", video_file=os.path.basename(video_filename))
-            except Exception as e:
-                return render_template("index.html", message=u"Error: " + unicode(e).encode("utf-8"))  # Unicode fix
-    
+        file = request.files["file"]
+        if file:
+            file_path = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+            file.save(file_path)
+            return "File uploaded successfully: <a href='/download/" + file.filename + "'>Download " + file.filename + "</a>"
     return render_template("index.html")
 
 @app.route("/download/<filename>")
-def download(filename):
-    file_path = os.path.join(download_path, filename)
-    return send_file(file_path, as_attachment=True)
+def download_file(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(debug=True)

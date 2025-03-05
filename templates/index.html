@@ -1,48 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Video Downloader</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 50px;
-        }
-        form {
-            margin-top: 20px;
-        }
-        input {
-            padding: 8px;
-            width: 300px;
-        }
-        button {
-            padding: 8px 12px;
-            cursor: pointer;
-        }
-        .message {
-            margin-top: 20px;
-            font-weight: bold;
-            color: green;
-        }
-        .error {
-            color: red;
-        }
-    </style>
+    <title>File Uploader</title>
 </head>
 <body>
-    <h2>YouTube Video Downloader</h2>
-    <form method="POST">
-        <label for="video_url">Enter YouTube Video URL:</label><br><br>
-        <input type="text" id="video_url" name="video_url" required><br><br>
-        <button type="submit">Download</button>
+    <h2>Upload a File</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" required>
+        <button type="submit">Upload</button>
     </form>
-    {% if message %}
-        <p class="message {% if 'Error' in message %}error{% endif %}">{{ message }}</p>
-    {% endif %}
-    {% if video_file %}
-        <p><a href="{{ url_for('download', filename=video_file) }}" download>Click here to download the video</a></p>
-    {% endif %}
 </body>
 </html>
