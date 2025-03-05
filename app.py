@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, send_from_directory, g, redirect, url_for
 import os
 import sqlite3
-import datetime
+from datetime import datetime
 import pytz
 
 app = Flask(__name__)
@@ -49,6 +49,9 @@ def upload_file():
         description = request.form.get("description", "").strip()
         
         if file:
+            ist = pytz.timezone("Asia/Kolkata")
+            current_datetime = datetime.now(ist).strftime("%d-%m-%Y %I:%M %p")
+
             file_path = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
             file.save(file_path)
 
@@ -57,8 +60,8 @@ def upload_file():
             # Save file record in the database
             try:
                 db.execute(
-                    "INSERT INTO files (filename, description, size) VALUES (?, ?, ?)",
-                    (file.filename, description, file_size)
+                    "INSERT INTO files (filename, description, size, uploaded_at) VALUES (?, ?, ?, ?)",
+                    (file.filename, description, file_size, current_datetime)
                 )
                 db.commit()
             except sqlite3.IntegrityError:
@@ -69,7 +72,10 @@ def upload_file():
     # Fetch all uploaded files (latest first)
     files = db.execute("SELECT * FROM files ORDER BY uploaded_at DESC").fetchall()
     total_files = len(files)  # Get total file count
-    return render_template("index.html", files=files, total_files=total_files)
+    ist = pytz.timezone("Asia/Kolkata")
+    current_year = datetime.now(ist).strftime("%Y")
+    
+    return render_template("index.html", files=files, total_files=total_files, year=current_year)
 
 @app.route("/download/<filename>")
 def download_file(filename):
