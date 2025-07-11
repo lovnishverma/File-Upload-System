@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: flask-todo-app
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    autoDeploy: true
